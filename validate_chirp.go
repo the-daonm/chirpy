@@ -1,22 +1,22 @@
 package main
 
 import (
-	"net/http"
 	"encoding/json"
 	"log"
+	"net/http"
 	"strings"
 )
 
 func cleanProfanity(body string) string {
 	profanes := map[string]bool{
-			"kerfuffle": true,
-			"sharbert":  true,
-			"fornax":    true,
+		"kerfuffle": true,
+		"sharbert":  true,
+		"fornax":    true,
 	}
 	words := strings.Split(body, " ")
 	for i, word := range words {
 		if profanes[strings.ToLower(word)] {
-				words[i] = "****"
+			words[i] = "****"
 		}
 	}
 
@@ -50,7 +50,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload any) {
 func validateChirpHandler(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body string `json:"body"`
-	}		
+	}
 
 	dec := json.NewDecoder(r.Body)
 	params := parameters{}
