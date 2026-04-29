@@ -46,31 +46,3 @@ func respondWithJSON(w http.ResponseWriter, code int, payload any) {
 	w.WriteHeader(code)
 	w.Write(dat)
 }
-
-func validateChirpHandler(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Body string `json:"body"`
-	}
-
-	dec := json.NewDecoder(r.Body)
-	params := parameters{}
-	err := dec.Decode(&params)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
-		return
-	}
-
-	if len(params.Body) > 140 {
-		respondWithError(w, 400, "Chirp is too long")
-		return
-	}
-
-	type successResponse struct {
-		CleanedBody string `json:"cleaned_body"`
-	}
-	sucResponse := successResponse{
-		CleanedBody: cleanProfanity(params.Body),
-	}
-
-	respondWithJSON(w, 200, sucResponse)
-}
