@@ -12,8 +12,9 @@ import (
 
 func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email            string `json:"email"`
+		Password         string `json:"password"`
+		ExpiresInSeconds int    `json:"expires_in_seconds"`
 	}
 
 	dec := json.NewDecoder(r.Body)
@@ -41,7 +42,15 @@ func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.MakeJWT(dbUser.ID, cfg.jwtSecret, time.Hour)
+	expireIn := time.Hour
+	if params.ExpiresInSeconds > 0 {
+		requested := time.Duration(params.ExpiresInSeconds) * time.Second
+		if requested < time.Hour {
+			expireIn = requested
+		}
+	}
+
+	token, err := auth.MakeJWT(dbUser.ID, cfg.jwtSecret, expireIn)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
