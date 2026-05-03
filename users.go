@@ -29,13 +29,13 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 	params := parameters{}
 	err := dec.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Some thing went wrong")
+		respondWithError(w, http.StatusBadRequest, "Couldn't decode parameters")
 		return
 	}
 
 	hash, err := auth.HashPassword(params.Password)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Some thing went wrong")
+		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
 	dbUser, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
@@ -62,13 +62,13 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 func (cfg *apiConfig) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Incorrect bearer token")
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	userID, err := auth.ValidateJWT(token, cfg.jwtSecret)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Incorrect jwt token")
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
@@ -81,7 +81,7 @@ func (cfg *apiConfig) updateUserHandler(w http.ResponseWriter, r *http.Request) 
 	params := parameters{}
 	err = dec.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
+		respondWithError(w, http.StatusBadRequest, "Couldn't decode parameters")
 		return
 	}
 
@@ -97,7 +97,7 @@ func (cfg *apiConfig) updateUserHandler(w http.ResponseWriter, r *http.Request) 
 		HashedPassword: hashedPassword,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
+		respondWithError(w, http.StatusInternalServerError, "Could not update user")
 		return
 	}
 

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"chirpy/internal/auth"
+
 	"github.com/google/uuid"
 )
 
@@ -18,7 +20,17 @@ func (cfg *apiConfig) webhookHandler(w http.ResponseWriter, r *http.Request) {
 	params := parameters{}
 	err := dec.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
+		respondWithError(w, http.StatusBadRequest, "Couldn't decode parameters")
+		return
+	}
+
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	if apiKey != cfg.polkaKey {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
@@ -29,7 +41,7 @@ func (cfg *apiConfig) webhookHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = cfg.db.UpdateChirpyRed(r.Context(), params.Data.UserID)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "Not found user_id")
+		respondWithError(w, http.StatusNotFound, "User not found")
 		return
 	}
 
