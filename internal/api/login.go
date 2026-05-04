@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *ApiConfig) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -25,7 +25,7 @@ func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser, err := cfg.db.GetUserByEmail(r.Context(), params.Email)
+	dbUser, err := cfg.DB.GetUserByEmail(r.Context(), params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Incorrect email or password")
 		return
@@ -46,17 +46,17 @@ func (cfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
-	_, err = cfg.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+	_, err = cfg.DB.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		Token:     refreshToken,
 		UserID:    dbUser.ID,
-		ExpiresAt: time.Now().AddDate(0, 0, 60),
+		ExpiresAt: time.Now().UTC().AddDate(0, 0, 60),
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not create refresh token")
 		return
 	}
 
-	token, err := auth.MakeJWT(dbUser.ID, cfg.jwtSecret, time.Hour)
+	token, err := auth.MakeJWT(dbUser.ID, cfg.JwtSecret, time.Hour)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not create access token")
 		return

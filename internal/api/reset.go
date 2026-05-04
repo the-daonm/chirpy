@@ -1,16 +1,16 @@
-package main
+package api
 
 import (
 	"net/http"
 )
 
-func (cfg *apiConfig) resetHandler(w http.ResponseWriter, r *http.Request) {
-	if cfg.platform != "dev" {
+func (cfg *ApiConfig) ResetHandler(w http.ResponseWriter, r *http.Request) {
+	if cfg.Platform != "dev" {
 		respondWithError(w, http.StatusForbidden, "Platform different from dev")
 		return
 	}
 
-	err := cfg.db.DeleteAllUsers(r.Context())
+	err := cfg.DB.DeleteAllUsers(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not delete all users")
 		return

@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -15,8 +15,26 @@ func cleanProfanity(body string) string {
 	}
 	words := strings.Split(body, " ")
 	for i, word := range words {
-		if profanes[strings.ToLower(word)] {
-			words[i] = "****"
+		loweredWord := strings.ToLower(word)
+		trimmedWord := strings.Trim(loweredWord, ".,!?;:")
+		if profanes[trimmedWord] {
+			prefix := ""
+			for j := 0; j < len(word); j++ {
+				if !strings.ContainsAny(string(word[j]), ".,!?;:") {
+					prefix = word[:j]
+					break
+				}
+			}
+
+			suffix := ""
+			for j := len(word) - 1; j >= 0; j-- {
+				if !strings.ContainsAny(string(word[j]), ".,!?;:") {
+					suffix = word[j+1:]
+					break
+				}
+			}
+
+			words[i] = prefix + "****" + suffix
 		}
 	}
 

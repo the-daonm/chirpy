@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"net/http"
@@ -7,19 +7,19 @@ import (
 	"chirpy/internal/auth"
 )
 
-func (cfg *apiConfig) refreshHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *ApiConfig) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
-	refreshToken, err := cfg.db.GetUserFromRefreshToken(r.Context(), token)
+	refreshToken, err := cfg.DB.GetUserFromRefreshToken(r.Context(), token)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	if refreshToken.ExpiresAt.Before(time.Now()) {
+	if refreshToken.ExpiresAt.Before(time.Now().UTC()) {
 		respondWithError(w, http.StatusUnauthorized, "Refresh token expired")
 		return
 	}
@@ -28,7 +28,7 @@ func (cfg *apiConfig) refreshHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := auth.MakeJWT(refreshToken.UserID, cfg.jwtSecret, time.Hour)
+	accessToken, err := auth.MakeJWT(refreshToken.UserID, cfg.JwtSecret, time.Hour)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not create access token")
 		return
@@ -44,14 +44,14 @@ func (cfg *apiConfig) refreshHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, responseToken)
 }
 
-func (cfg *apiConfig) revokeHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *ApiConfig) RevokeHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
-	err = cfg.db.RevokeRefreshToken(r.Context(), token)
+	err = cfg.DB.RevokeRefreshToken(r.Context(), token)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return

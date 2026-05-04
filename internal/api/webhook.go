@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) webhookHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *ApiConfig) WebhookHandler(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Event string `json:"event"`
 		Data  struct {
@@ -29,7 +29,7 @@ func (cfg *apiConfig) webhookHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	if apiKey != cfg.polkaKey {
+	if apiKey != cfg.PolkaKey {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
@@ -39,7 +39,7 @@ func (cfg *apiConfig) webhookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = cfg.db.UpdateChirpyRed(r.Context(), params.Data.UserID)
+	_, err = cfg.DB.UpdateChirpyRed(r.Context(), params.Data.UserID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "User not found")
 		return

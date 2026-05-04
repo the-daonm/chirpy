@@ -180,3 +180,35 @@ func TestMakeRefreshToken_Unique(t *testing.T) {
 		t.Fatal("expected two refresh tokens to be different")
 	}
 }
+
+// GetAPIKey tests
+func TestGetAPIKey_Valid(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("Authorization", "ApiKey my-secret-key")
+	key, err := GetAPIKey(headers)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if key != "my-secret-key" {
+		t.Fatalf("expected my-secret-key, got: %s", key)
+	}
+}
+
+func TestGetAPIKey_Missing(t *testing.T) {
+	headers := http.Header{}
+	_, err := GetAPIKey(headers)
+	if err == nil {
+		t.Fatal("expected error for missing header, got nil")
+	}
+}
+
+func TestGetAPIKey_InvalidFormat(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("Authorization", "Bearer mytoken123")
+	_, err := GetAPIKey(headers)
+	if err == nil {
+		t.Fatal("expected error for invalid format, got nil")
+	}
+}
+
+
