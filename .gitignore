@@ -1,3 +1,4 @@
-chirpy
+/chirpy
+/out
 postgres-language-server.jsonc
 .env
