@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"time"
 
 	"chirpy/internal/auth"
@@ -96,6 +97,7 @@ func (cfg *ApiConfig) GetChirpHandler(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *ApiConfig) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	authorIDString := r.URL.Query().Get("author_id")
+	sortParam := r.URL.Query().Get("sort")
 
 	var dbChirps []database.Chirp
 	var err error
@@ -116,6 +118,13 @@ func (cfg *ApiConfig) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Could not get chirps")
 		return
 	}
+
+	sort.Slice(dbChirps, func(i, j int) bool {
+		if sortParam == "desc" {
+			return dbChirps[i].CreatedAt.After(dbChirps[j].CreatedAt)
+		}
+		return dbChirps[i].CreatedAt.Before(dbChirps[j].CreatedAt)
+	})
 
 	responseChirps := []Chirp{}
 	for _, dbChirp := range dbChirps {
