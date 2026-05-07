@@ -13,7 +13,6 @@ Chirpy is a robust backend API for a social media platform, built with Go and Po
 - [Usage](#usage)
 - [API Reference](#api-reference)
 - [Development](#development)
-- [License](#license)
 
 ## Features
 
@@ -130,7 +129,3 @@ If you modify the SQL queries in `sql/queries/`, regenerate the database code us
 ```bash
 sqlc generate
 ```
-
-## License
-
-This project is licensed under the MIT License.
